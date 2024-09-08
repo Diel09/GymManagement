@@ -32,7 +32,7 @@
                 <slot />
             </main>
 
-            <PageFooter />
+            <!-- <PageFooter /> -->
         </div>
     </div>
 </template>
