@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MembershipsController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,5 +33,20 @@ Route::get('/dashboard', function () {
 Route::get('/components/buttons', function () {
     return Inertia::render('Components/Buttons');
 })->middleware(['auth', 'verified'])->name('components.buttons');
+
+//member routes
+Route::get('/members', [MemberController::class, 'index'])->middleware('auth')->name('members.home');
+Route::get('/add_members', [MemberController::class, 'addMembers'])->middleware('auth')->name('members.add');
+Route::post('/save_member', [MemberController::class, 'saveMember'])->middleware('auth')->name('members.save');
+Route::get('/members/{id}/edit', [MemberController::class, 'edit'])->middleware('auth')->name('members.edit');
+Route::post('/update_member', [MemberController::class, 'update'])->middleware('auth')->name('members.update');
+
+//membership routes
+Route::get('/memberships', [MembershipsController::class, 'index'])->middleware('auth')->name('memberships.home');
+Route::get('/add_memberships', [MembershipsController::class, 'addMembership'])->middleware('auth')->name('memberships.add');
+Route::post('/save_membership', [MembershipsController::class, 'saveMembership'])->middleware('auth')->name('memberships.save');
+Route::get('/memberships/{id}/edit', [MembershipsController::class, 'edit'])->middleware('auth')->name('memberships.edit');
+Route::post('/update_membership', [MembershipsController::class, 'update'])->middleware('auth')->name('memberships.update');
+Route::delete('/memberships/{id}/delete', [MembershipsController::class, 'delete'])->middleware('auth')->name('memberships.delete');
 
 require __DIR__ . '/auth.php';

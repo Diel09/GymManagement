@@ -9,7 +9,7 @@
         </template>
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
-            You're logged in!
+            Dashboards / Analytics
         </div>
     </AuthenticatedLayout>
 </template>

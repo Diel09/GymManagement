@@ -3,7 +3,7 @@
 
     <div class="relative flex items-top justify-center min-h-screen bg-gray-900 dark:bg-dark-bg dark:text-gray-200 sm:items-center sm:pt-0">
         <div v-if="canLogin" class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
-            <Link v-if="$page.props.auth.user" href="/dashboard" class="text-sm text-gray-700 underline">
+            <Link v-if="$page.props.auth.user" href="/dashboard" class="text-sm text-white underline">
                 Dashboard
             </Link>
 
@@ -29,6 +29,13 @@
                             <p class="text-lg font-semibold">REMINDER:</p>
                             <p>Please scan your own QR code only. Honesty is the best policy.</p>
                         </div>
+                        <StreamBarcodeReader
+                            @decode="onDecode"
+                            @loaded="onLoaded"
+                        ></StreamBarcodeReader>
+                        <div v-if="code" class="mt-3 bg-gray-200 rounded-lg p-3 mb-3 text-center">
+                            <p class="text-lg font-semibold">Welcome, {{ code }}</p>
+                        </div>
                     </div>
                     <div class="px-4 py-2">
                         <div class="flex justify-center items-center">
@@ -53,13 +60,13 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 p-5 text-center">
-                            <div class="p-4 bg-gray-200 text-md font-semibold rounded">Time IN</div>
-                            <div class="p-4 bg-gray-200 text-md font-semibold rounded">Time OUT</div>
+                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Time IN</button>
+                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Time OUT</button>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 p-5 text-center">
-                            <div class="p-4 bg-gray-200 text-md font-semibold rounded">Guest IN</div>
-                            <div class="p-4 bg-gray-200 text-md font-semibold rounded">Guest OUT</div>
+                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Guest IN</button>
+                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Guest OUT</button>
                         </div>
                         <div class="text-center py-6">
                             <p class="font-bold text-lg text-green-600">SCAN YOUR QR Code</p>
@@ -72,15 +79,17 @@
 </template>
 
 <script>
-
 import { Head, Link } from '@inertiajs/inertia-vue3';
+import { StreamBarcodeReader } from "vue-barcode-reader";
+
 export default {
-    components: {Head, Link},
+    components: {Head, Link, StreamBarcodeReader},
     data() {
         return {
             day: '',
             date: '',
-            time: ''
+            time: '',
+            code: ''
         }
     },
     methods: {
@@ -90,7 +99,14 @@ export default {
             this.day = now.toLocaleDateString('en-US', {weekday: 'long'});
             this.date = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
             this.time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: 'numeric', second: 'numeric', hour12: true })
-        }
+        },
+        onDecode(text) {
+            console.log(`Decode text from QR code is ${text}`);
+            this.code = text;
+        },
+        onLoaded() {
+        console.log(`Ready to start scanning barcodes`)
+        },
     },
     mounted() {
         setInterval(() => {
