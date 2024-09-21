@@ -6,6 +6,7 @@ use Inertia\Inertia;
 
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MembershipsController;
+use App\Http\Controllers\WalkInsController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -49,4 +50,10 @@ Route::get('/memberships/{id}/edit', [MembershipsController::class, 'edit'])->mi
 Route::post('/update_membership', [MembershipsController::class, 'update'])->middleware('auth')->name('memberships.update');
 Route::delete('/memberships/{id}/delete', [MembershipsController::class, 'delete'])->middleware('auth')->name('memberships.delete');
 
+//in out routes
+Route::post('/time', [MemberController::class, 'time'])->name('members.time');
+
+//walk in routes
+Route::get('/walk_in', [WalkInsController::class, 'index'])->middleware('auth')->name('walkins.home');
+Route::post('/save_walkin', [WalkInsController::class, 'saveWalkin'])->middleware('auth')->name('walkins.save');
 require __DIR__ . '/auth.php';

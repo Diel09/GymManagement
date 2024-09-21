@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Membership;
 use App\Models\Members;
+use App\Models\TimeIn;  
 use App\Models\MembersMemberships;
 use Carbon\Carbon;
 
@@ -81,6 +82,31 @@ class MemberController extends Controller
         if($member->save()) {
             return response()->json([
                 'status' => 'success'
+            ]);
+        }
+    }
+
+    public function time(Request $r) {
+        $date = Carbon::now()->toDateString();
+        $check = TimeIn::where('member_id', $r->id)->where('date', $date)->first();
+        $member = Members::findOrFail($r->id);
+
+        if(!$check) {
+            $time = new TimeIn();
+            $time->member_id = $r->id;
+            $time->date = $date;
+            $time->in = Carbon::now()->toTimeString();
+            $time->save();
+
+            return response()->json([
+                'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name
+            ]);
+        } else if (!$r->active) {
+            $check->out = Carbon::now()->toTimeString();
+            $check->save();
+
+            return response()->json([
+                'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
             ]);
         }
     }

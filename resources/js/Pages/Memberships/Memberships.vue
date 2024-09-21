@@ -93,7 +93,7 @@ export default {
     },
     props: ['memberships', 'totalItems', 'currentRange'],
     mounted() {
-        console.log(this.memberships);
+
     }
 }
 </script>

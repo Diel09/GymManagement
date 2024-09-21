@@ -129,7 +129,6 @@ export default {
             if(Object.keys(this.errors).length == 0) {
                 axios.post('/save_member', this.member).then((response) => {
                     if(response.data.status == 'success') {
-                        console.log('')
                         Inertia.visit('/members');
                     } else {
                         console.error('Failed to save member');

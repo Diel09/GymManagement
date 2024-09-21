@@ -33,8 +33,8 @@
                             @decode="onDecode"
                             @loaded="onLoaded"
                         ></StreamBarcodeReader>
-                        <div v-if="code" class="mt-3 bg-gray-200 rounded-lg p-3 mb-3 text-center">
-                            <p class="text-lg font-semibold">Welcome, {{ code }}</p>
+                        <div v-if="msg" class="mt-3 bg-gray-200 rounded-lg p-3 mb-3 text-center">
+                            <p class="text-lg font-semibold">{{ msg }}</p>
                         </div>
                     </div>
                     <div class="px-4 py-2">
@@ -60,14 +60,25 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 p-5 text-center">
-                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Time IN</button>
-                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Time OUT</button>
+                            <button 
+                                @click="toggleIn"
+                                :class="{'bg-purple-700 text-white': activeIn, 'bg-gray-200 text-md font-semibold': !activeIn}"
+                                class="p-4 rounded">
+                                Time IN
+                            </button>
+
+                            <button 
+                                @click="toggleOut"
+                                :class="{'bg-purple-700 text-white': activeOut, 'bg-gray-200 text-md font-semibold': !activeOut}"
+                                class="p-4 rounded">
+                                Time OUT
+                            </button>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 p-5 text-center">
-                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Guest IN</button>
-                            <button class="p-4 bg-gray-200 text-md font-semibold rounded">Guest OUT</button>
-                        </div>
+                        <!-- <div class="grid grid-cols-2 gap-2 p-5 text-center">
+                            <button :class="", class="p-4 bg-gray-200 text-md font-semibold rounded">Guest IN</button>
+                            <button :class="" class="p-4 bg-gray-200 text-md font-semibold rounded">Guest OUT</button>
+                        </div> -->
                         <div class="text-center py-6">
                             <p class="font-bold text-lg text-green-600">SCAN YOUR QR Code</p>
                         </div>
@@ -89,7 +100,11 @@ export default {
             day: '',
             date: '',
             time: '',
-            code: ''
+            id: '',
+            msg: '',
+            activeIn: false,
+            activeOut: false,
+            lastScanned: 0,  
         }
     },
     methods: {
@@ -101,12 +116,44 @@ export default {
             this.time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: 'numeric', second: 'numeric', hour12: true })
         },
         onDecode(text) {
-            console.log(`Decode text from QR code is ${text}`);
-            this.code = text;
+            const currentTime = Date.now();
+
+            if (currentTime - this.lastScanned < 3000) {
+                return;
+            }
+            this.lastScanned = currentTime;
+            
+            this.id = text;
+
+            if(this.activeIn == true || this.activeOut == true) {
+                axios.post('/time', {
+                    'id': this.id, 
+                    'active': this.activeIn
+                }).then((response) => {
+                    this.msg = response.data.msg
+
+                    setTimeout(() => {
+                        this.msg = '';  // Clear the message after 3 seconds
+                    }, 3000);
+                });
+            } else {
+                this.msg = 'Please select one [Time in / Time out]';
+                setTimeout(() => {
+                    this.msg = '';  // Clear the message after 3 seconds
+                }, 3000);
+            }
         },
         onLoaded() {
-        console.log(`Ready to start scanning barcodes`)
+            console.log(`Ready to start scanning barcodes`)
         },
+        toggleIn() {
+            this.activeIn = true;
+            this.activeOut = false;
+        },
+        toggleOut() {
+            this.activeIn = false;
+            this.activeOut = true;
+        }
     },
     mounted() {
         setInterval(() => {

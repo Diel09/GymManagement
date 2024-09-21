@@ -9,6 +9,9 @@
         </template>
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
+            <div v-if="msg" class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-100 dark:bg-gray-800 dark:text-green-400" role="alert">
+                <span class="font-medium">{{ this.msg }}</span>
+            </div>
             <form @submit.prevent="saveMembership" class="space-y-6">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>

@@ -106,7 +106,6 @@ export default {
             this.showQr = true;
             this.text = String(id);
             this.name = member.first_name + ' ' + member.last_name;
-            console.log(this.name);
         }
     },
     props: ['members', 'totalItems', 'currentRange'],
