@@ -1,5 +1,5 @@
 <template>
-    <AuthenticatedLayout title="Dashboard">
+    <AuthenticatedLayout title="Memberships">
         <template #header>
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-stretch">
                 <h2 class="text-xl font-semibold leading-tight basis-10/12">
@@ -75,7 +75,7 @@ export default {
         }
     },
     components: {
-        AuthenticatedLayout, Link, Paginator
+        AuthenticatedLayout, Paginator
     },
     methods: {
         async deleteMembership(id) {

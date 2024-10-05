@@ -64,7 +64,7 @@
                                 >
                                     <span>Delete</span>
                                 </button> -->
-                                <button v-if="new Date(member.end_date) <= new Date()" type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                <button @click="renew(member.id)" v-if="new Date(member.end_date) <= new Date()" type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                                     Renew
                                 </button>
 
@@ -78,6 +78,36 @@
             </div>
             <Paginator :paginator="members" :total="totalItems" :currentRange="currentRange"></Paginator>
             <QRcode v-if="showQr" :name="name" :value="text" @close="showQr = false"></QRcode>
+
+            <!-- Main modal -->
+            <div v-if="showModal" class="backdrop-blur overflow-y-auto overflow-x-hidden fixed inset-0 z-50 flex justify-center items-center max-w-full max-h-full">
+                <div class="relative p-4 w-full max-w-2xl max-h-full">
+                    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                Renew {{ this.name }} ?
+                            </h3>
+                            <button @click="showModal=false" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="static-modal">
+                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <!-- Modal body -->
+                        <div class="p-4 md:p-5 space-y-4">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-white">Membership</label>
+                                <select v-model="membership" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                                    <option v-for="membership in memberships" :key="membership.id" :value="membership.id">{{ membership.name }}</option>
+                                </select>
+                            </div>
+                        <!-- Modal footer -->
+                        <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                            <button @click="renewal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </AuthenticatedLayout>
 </template>
@@ -93,6 +123,9 @@ export default {
         return {
             showQr: false,
             text: '',
+            showModal: false,
+            membership: '',
+            memberId: ''
         }
     },
     components: {
@@ -106,8 +139,30 @@ export default {
             this.showQr = true;
             this.text = String(id);
             this.name = member.first_name + ' ' + member.last_name;
+        },
+        renew(id) {
+            let m = this.members.data;
+            let member = m.find(obj => obj.id === id);
+
+            this.memberId = id;
+
+            this.showModal = true;
+            this.name = member.first_name + ' ' + member.last_name;
+        },
+        renewal() {
+            axios.post('/renew', {
+                'id': this.memberId,
+                'membership': this.membership
+            }).then(response => {
+                if(response.data.status == 'success') {
+                    this.showModal = false;
+                    this.memberId = '';
+                    location.reload();
+                }
+                
+            })
         }
     },
-    props: ['members', 'totalItems', 'currentRange'],
+    props: ['members', 'totalItems', 'currentRange', 'memberships'],
 }
 </script>

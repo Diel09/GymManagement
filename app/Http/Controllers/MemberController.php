@@ -13,13 +13,17 @@ use Carbon\Carbon;
 class MemberController extends Controller
 {
     public function index() {
-        $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'users_memberships.end_date', 'members.id')
-                ->join('users_memberships', 'members.id', '=', 'users_memberships.member_id')
-                ->join('memberships', 'users_memberships.memberships_id', 'memberships.id')
-                ->paginate(10);
+        $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'latest_membership.end_date', 'members.id')
+                        ->join('users_memberships as latest_membership', function($join) {
+                            $join->on('latest_membership.member_id', '=', 'members.id')
+                                ->whereRaw('latest_membership.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
+                    })->join('memberships', 'latest_membership.memberships_id', '=', 'memberships.id')->paginate(10);
         // dd($members);
+        $memberships = Membership::all();
+
         return Inertia::render('Members/Members', [
             'members' => $members,
+            'memberships' => $memberships,
             'totalItems' => $members->total(),
             'currentRange' => sprintf('%d-%d', ($members->currentPage() - 1) * $members->perPage() + 1, min($members->currentPage() * $members->perPage(), $members->total())),
         ]);
@@ -107,6 +111,23 @@ class MemberController extends Controller
 
             return response()->json([
                 'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
+            ]);
+        }
+    }
+
+    public function renew(Request $request) {
+        $membership = Membership::findOrFail($request->membership);
+
+        $user_membership = new MembersMemberships;
+        $user_membership->member_id = $request->id;
+        $user_membership->memberships_id = $request->membership;
+        $user_membership->fee = $membership->fee;
+        $user_membership->start_date = Carbon::now()->toDateString();
+        $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
+
+        if($user_membership->save()) {
+            return response()->json([
+                'status' => 'success'
             ]);
         }
     }

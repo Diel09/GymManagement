@@ -52,7 +52,7 @@
                                 <p class="font-semibold">How to use:</p>
                                 <ul class="list-decimal pl-5">
                                     <li>Make sure that the correct time period is selected.</li>
-                                    <li>Click <strong>Guest IN</strong> or <strong>Guest OUT</strong> below if you are a GUEST.</li>
+                                    <li>If you are not a member, approach someone from the management</li>
                                     <li>Scan your QR code</li>
                                 </ul>
                                 <p class="mt-2">Press F5 to refresh the system if it does not work and make sure that the computer has an internet connection.</p>

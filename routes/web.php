@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MembershipsController;
 use App\Http\Controllers\WalkInsController;
+use App\Http\Controllers\ReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -27,9 +28,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [ReportController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/components/buttons', function () {
     return Inertia::render('Components/Buttons');
@@ -41,6 +40,7 @@ Route::get('/add_members', [MemberController::class, 'addMembers'])->middleware(
 Route::post('/save_member', [MemberController::class, 'saveMember'])->middleware('auth')->name('members.save');
 Route::get('/members/{id}/edit', [MemberController::class, 'edit'])->middleware('auth')->name('members.edit');
 Route::post('/update_member', [MemberController::class, 'update'])->middleware('auth')->name('members.update');
+Route::post('/renew', [MemberController::class, 'renew'])->middleware('auth')->name('members.renew');
 
 //membership routes
 Route::get('/memberships', [MembershipsController::class, 'index'])->middleware('auth')->name('memberships.home');
@@ -52,6 +52,10 @@ Route::delete('/memberships/{id}/delete', [MembershipsController::class, 'delete
 
 //in out routes
 Route::post('/time', [MemberController::class, 'time'])->name('members.time');
+
+//reports routes
+Route::get('/reports', [ReportController::class, 'index'])->middleware('auth')->name('reports.home');
+Route::post('/reports/download', [ReportController::class, 'download'])->middleware('auth')->name('reports.download');
 
 //walk in routes
 Route::get('/walk_in', [WalkInsController::class, 'index'])->middleware('auth')->name('walkins.home');
