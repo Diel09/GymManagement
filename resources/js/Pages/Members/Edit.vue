@@ -29,7 +29,7 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">Gender</label>
                         <select v-model="member.gender" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
@@ -48,6 +48,11 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">Contact</label>
                         <input v-model="member.contact" type="text" placeholder="Contact" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.member" class="text-red-500 text-sm">{{ errors.member }}</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">RFID</label>
+                        <input v-model="member.rfid" type="text" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <span v-if="errors.rfid" class="text-red-500 text-sm">{{ errors.rfid }}</span>
                     </div>
                 </div>
                 
@@ -79,7 +84,8 @@ export default {
                 middle_name: this.mem.middle_name,
                 gender: this.mem.gender,
                 birthdate: this.mem.birth_date,
-                contact: this.mem.contact
+                contact: this.mem.contact,
+                rfid: this.mem.rfid
             },
             errors: {}
         }
@@ -113,6 +119,9 @@ export default {
 
             if (!this.member.contact) {
                 this.errors.contact = "Contact is required.";
+            }
+            if (!this.member.rfid) {
+                this.errors.rfid = "RFID is required.";
             }
 
             if(Object.keys(this.errors).length == 0) {

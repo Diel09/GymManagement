@@ -43,7 +43,7 @@ export default {
                 datasets: [
                     {
                         label: 'Monthly Sales',
-                        backgroundColor: '#9333ea',
+                        backgroundColor: '#2563eb',
                         data: this.sales,
                     }
                 ]

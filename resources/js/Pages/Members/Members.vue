@@ -15,7 +15,7 @@
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                <table v-if="members.data && members.data.length > 0" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
                             <th scope="col" class="px-6 py-3">
@@ -44,7 +44,7 @@
                                 {{ member.name }}
                             </td>
                             <td class="px-6 py-4">
-                                {{ member.end_date }}
+                                {{ formatDate(member.end_date) }}
                             </td>
                             <td class="px-6 py-4">
                                 <span v-if="new Date(member.end_date) >= new Date()" class="text-green-500 font-semibold">
@@ -68,13 +68,16 @@
                                     Renew
                                 </button>
 
-                                <button @click="generateQR(member.id)" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                <!-- <button @click="generateQR(member.id)" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                     Generate QR
-                                </button>
+                                </button> -->
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <div v-else class="p-5">
+                    No Members Found!
+                </div>
             </div>
             <Paginator :paginator="members" :total="totalItems" :currentRange="currentRange"></Paginator>
             <QRcode v-if="showQr" :name="name" :value="text" @close="showQr = false"></QRcode>
@@ -161,6 +164,15 @@ export default {
                 }
                 
             })
+        },
+        formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long', // "Monday"
+                year: 'numeric', // "2025"
+                month: 'long', // "October"
+                day: 'numeric', // "12"
+            });
         }
     },
     props: ['members', 'totalItems', 'currentRange', 'memberships'],

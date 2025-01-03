@@ -75,7 +75,7 @@ export default {
         }
     },
     components: {
-        AuthenticatedLayout, Paginator
+        AuthenticatedLayout, Paginator, Link
     },
     methods: {
         async deleteMembership(id) {

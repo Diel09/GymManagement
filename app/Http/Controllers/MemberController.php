@@ -13,11 +13,20 @@ use Carbon\Carbon;
 class MemberController extends Controller
 {
     public function index() {
-        $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'latest_membership.end_date', 'members.id')
-                        ->join('users_memberships as latest_membership', function($join) {
-                            $join->on('latest_membership.member_id', '=', 'members.id')
-                                ->whereRaw('latest_membership.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
-                    })->join('memberships', 'latest_membership.memberships_id', '=', 'memberships.id')->paginate(10);
+        // $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'latest_membership.end_date', 'members.id')
+        //                 ->leftJoin('users_memberships as latest_membership', function($join) {
+        //                     $join->on('latest_membership.member_id', '=', 'members.id')
+        //                         ->whereRaw('latest_membership.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
+        //             })->join('memberships', 'latest_membership.memberships_id', '=', 'memberships.id')->paginate(10);
+
+        $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'users_memberships.end_date', 'members.id')
+                        ->leftJoin('users_memberships', function($join) {
+                            $join->on('users_memberships.member_id', '=', 'members.id')
+                                ->whereRaw('users_memberships.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
+                        })
+                        ->leftJoin('memberships', 'users_memberships.memberships_id', '=', 'memberships.id')
+                        ->paginate(10);
+
         // dd($members);
         $memberships = Membership::all();
 
@@ -47,6 +56,7 @@ class MemberController extends Controller
         $member->birth_date = $r->birthdate;
         $member->age = Carbon::parse($r->birthdate)->age;
         $member->contact = $r->contact;
+        $member->rfid = $r->rfid;
         $member->save();
 
         $membership = Membership::findOrFail($r->membership);
@@ -82,6 +92,7 @@ class MemberController extends Controller
         $member->birth_date = $r->birthdate;
         $member->age = Carbon::parse($r->birthdate)->age;
         $member->contact = $r->contact;
+        $member->rfid = $r->rfid;
 
         if($member->save()) {
             return response()->json([
@@ -92,18 +103,19 @@ class MemberController extends Controller
 
     public function time(Request $r) {
         $date = Carbon::now()->toDateString();
-        $check = TimeIn::where('member_id', $r->id)->where('date', $date)->first();
-        $member = Members::findOrFail($r->id);
+        $member = Members::where('rfid', $r->id)->first();
+        $check = TimeIn::where('member_id', $member->id)->where('date', $date)->first();
 
         if(!$check) {
             $time = new TimeIn();
-            $time->member_id = $r->id;
+            $time->member_id = $member->id;
+
             $time->date = $date;
             $time->in = Carbon::now()->toTimeString();
             $time->save();
 
             return response()->json([
-                'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name
+                'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name . ' Keep Grinding'
             ]);
         } else if (!$r->active) {
             $check->out = Carbon::now()->toTimeString();
@@ -111,6 +123,10 @@ class MemberController extends Controller
 
             return response()->json([
                 'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
+            ]);
+        } else {
+            return response()->json([
+                'msg' => 'You are already in '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
             ]);
         }
     }

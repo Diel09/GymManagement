@@ -8,6 +8,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MembershipsController;
 use App\Http\Controllers\WalkInsController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ExpensesController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -52,6 +53,13 @@ Route::delete('/memberships/{id}/delete', [MembershipsController::class, 'delete
 
 //in out routes
 Route::post('/time', [MemberController::class, 'time'])->name('members.time');
+
+//expenses route
+Route::get('/expenses', [ExpensesController::class, 'index'])->middleware('auth')->name('expenses.home');
+Route::get('/add_expense', [ExpensesController::class, 'addExpense'])->middleware('auth')->name('expenses.add');
+Route::post('/save_expense', [ExpensesController::class, 'saveExpense'])->middleware('auth')->name('expenses.save');
+Route::get('/expense/{id}/edit', [ExpensesController::class, 'editExpense'])->middleware('auth')->name('expenses.edit');
+Route::post('/update_expense', [ExpensesController::class, 'updateExpense'])->middleware('auth')->name('expenses.update');
 
 //reports routes
 Route::get('/reports', [ReportController::class, 'index'])->middleware('auth')->name('reports.home');

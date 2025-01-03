@@ -11,10 +11,6 @@
                 <Link :href="route('login')" class="text-sm text-white underline">
                     Log in
                 </Link>
-
-                <!-- <Link v-if="canRegister" :href="route('register')" class="ml-4 text-sm text-gray-700 underline">
-                    Register
-                </Link> -->
             </template>
         </div>
 
@@ -23,19 +19,30 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 h-auto w-auto">
                     <div class="px-4 py-2">
                         <div class="text-center p-5">
-                            <h1 class="text-xl font-bold">Gym Attendance Recording System</h1>
+                            <h1 class="text-xl font-bold">HeatDrops Attendance System</h1>
                         </div>
                         <div class="bg-gray-200 rounded-lg p-3 mb-3 text-center">
                             <p class="text-lg font-semibold">REMINDER:</p>
-                            <p>Please scan your own QR code only. Honesty is the best policy.</p>
+                            <p>Please tap your RFID only. Honesty is the best policy.</p>
                         </div>
-                        <StreamBarcodeReader
-                            @decode="onDecode"
-                            @loaded="onLoaded"
-                        ></StreamBarcodeReader>
+                        
                         <div v-if="msg" class="mt-3 bg-gray-200 rounded-lg p-3 mb-3 text-center">
                             <p class="text-lg font-semibold">{{ msg }}</p>
                         </div>
+
+                        <!-- RFID Form -->
+                        <form @submit.prevent="onDecodeForm">
+                            <input
+                                v-model="rfidInput"
+                                id="rfid-input"
+                                type="text"
+                                autocomplete="off"
+                                autofocus
+                                class="absolute opacity-0 w-0 h-0"
+                                @blur="focusInput"
+                            />
+                        </form>
+
                     </div>
                     <div class="px-4 py-2">
                         <div class="flex justify-center items-center">
@@ -52,35 +59,30 @@
                                 <p class="font-semibold">How to use:</p>
                                 <ul class="list-decimal pl-5">
                                     <li>Make sure that the correct time period is selected.</li>
-                                    <li>If you are not a member, approach someone from the management</li>
-                                    <li>Scan your QR code</li>
+                                    <li>If you are not a member, approach someone from the management.</li>
+                                    <li>Tap your RFID.</li>
                                 </ul>
-                                <p class="mt-2">Press F5 to refresh the system if it does not work and make sure that the computer has an internet connection.</p>
+                                <p class="mt-2">Press F5 to refresh the system if it does not work.</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 p-5 text-center">
                             <button 
                                 @click="toggleIn"
-                                :class="{'bg-purple-700 text-white': activeIn, 'bg-gray-200 text-md font-semibold': !activeIn}"
+                                :class="{'bg-blue-600 text-white': activeIn, 'bg-gray-200 text-md font-semibold': !activeIn}"
                                 class="p-4 rounded">
                                 Time IN
                             </button>
 
                             <button 
                                 @click="toggleOut"
-                                :class="{'bg-purple-700 text-white': activeOut, 'bg-gray-200 text-md font-semibold': !activeOut}"
+                                :class="{'bg-blue-600 text-white': activeOut, 'bg-gray-200 text-md font-semibold': !activeOut}"
                                 class="p-4 rounded">
                                 Time OUT
                             </button>
                         </div>
-
-                        <!-- <div class="grid grid-cols-2 gap-2 p-5 text-center">
-                            <button :class="", class="p-4 bg-gray-200 text-md font-semibold rounded">Guest IN</button>
-                            <button :class="" class="p-4 bg-gray-200 text-md font-semibold rounded">Guest OUT</button>
-                        </div> -->
                         <div class="text-center py-6">
-                            <p class="font-bold text-lg text-green-600">SCAN YOUR QR Code</p>
+                            <p class="font-bold text-lg text-green-600">Tap your RFID in the Scanner</p>
                         </div>
                     </div>
                 </div>
@@ -91,60 +93,64 @@
 
 <script>
 import { Head, Link } from '@inertiajs/inertia-vue3';
-import { StreamBarcodeReader } from "vue-barcode-reader";
 
 export default {
-    components: {Head, Link, StreamBarcodeReader},
+    components: { Head, Link },
     data() {
         return {
             day: '',
             date: '',
             time: '',
-            id: '',
+            rfidInput: '',
             msg: '',
             activeIn: false,
             activeOut: false,
-            lastScanned: 0,  
+            lastScanned: 0,
         }
     },
     methods: {
         updateDateTime() {
             const now = new Date();
-
-            this.day = now.toLocaleDateString('en-US', {weekday: 'long'});
-            this.date = now.toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'});
-            this.time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: 'numeric', second: 'numeric', hour12: true })
+            this.day = now.toLocaleDateString('en-US', { weekday: 'long' });
+            this.date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            this.time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: 'numeric', second: 'numeric', hour12: true });
         },
-        onDecode(text) {
+        onDecodeForm() {
             const currentTime = Date.now();
 
             if (currentTime - this.lastScanned < 3000) {
                 return;
             }
             this.lastScanned = currentTime;
-            
-            this.id = text;
 
-            if(this.activeIn == true || this.activeOut == true) {
+            if (this.rfidInput.trim() === '') {
+                this.msg = 'Please scan your RFID';
+
+                setTimeout(() => {
+                    this.msg = '';  // Clear the message after 3 seconds
+                }, 3000);
+                return;
+            }
+
+            if (this.activeIn || this.activeOut) {
                 axios.post('/time', {
-                    'id': this.id, 
-                    'active': this.activeIn
+                    id: this.rfidInput,
+                    active: this.activeIn
                 }).then((response) => {
-                    this.msg = response.data.msg
+                    this.msg = response.data.msg;
+                    this.rfidInput = ''; // Clear the input field
 
                     setTimeout(() => {
                         this.msg = '';  // Clear the message after 3 seconds
                     }, 3000);
                 });
             } else {
-                this.msg = 'Please select one [Time in / Time out]';
+                this.msg = 'Please select one [Time in / Time out].';
                 setTimeout(() => {
                     this.msg = '';  // Clear the message after 3 seconds
                 }, 3000);
             }
-        },
-        onLoaded() {
-            console.log(`Ready to start scanning barcodes`)
+            this.rfidInput = ''; // Clear the input field
         },
         toggleIn() {
             this.activeIn = true;
@@ -153,13 +159,23 @@ export default {
         toggleOut() {
             this.activeIn = false;
             this.activeOut = true;
-        }
+        },
+        focusInput() {
+            this.$nextTick(() => {
+                document.getElementById('rfid-input').focus();
+            });
+        },
     },
     mounted() {
         setInterval(() => {
-            this.updateDateTime()
+            this.updateDateTime();
         }, 1000);
+        this.focusInput(); // Ensure the input is focused on mount
+        window.addEventListener('click', this.focusInput); // Reapply focus on any click
     },
-    props: ['canLogin', 'canRegiser']
+    beforeUnmount() {
+        window.removeEventListener('click', this.focusInput); // Cleanup event listener
+    },
+    props: ['canLogin', 'canRegister']
 }
 </script>

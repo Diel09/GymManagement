@@ -1,7 +1,9 @@
 import { useDark, useToggle } from '@vueuse/core'
 import { reactive } from 'vue'
 
-export const isDark = useDark()
+export const isDark = useDark({
+    value: true, // Set default to dark mode
+})
 export const toggleDarkMode = useToggle(isDark)
 
 export const sidebarState = reactive({

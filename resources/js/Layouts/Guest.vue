@@ -6,7 +6,7 @@
     >
         <div class="flex-shrink-0">
             <Link href="/">
-                <ApplicationLogo class="w-20 h-20" />
+                <ApplicationLogo class="w-48 h-auto" />
             </Link>
         </div>
 

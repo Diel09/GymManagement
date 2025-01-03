@@ -9,6 +9,7 @@ use Inertia\Inertia;
 use App\Models\WalkIns;
 use App\Models\Members;
 use App\Models\TimeIn;
+use App\Models\Expenses;
 use App\Models\MembersMemberships;
 
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -134,8 +135,19 @@ class ReportController extends Controller
         }
 
         // dd($member);
+        $expenses = Expenses::whereBetween('date_spend', [$from, $to])->get();
+        // dd($expenses);
+        $expense = [];
+        $expense['total'] = 0;
+        foreach($expenses as $key => $ex) {
+            $expense[$key]['title'] = $ex->title;
+            $expense[$key]['price'] = $ex->price;
+            $expense[$key]['date_spend'] = $ex->date_spend;
+            $expense['total'] = $expense['total'] + $ex->price;
+        }
+        // dd($expense);
 
-        $pdf = Pdf::loadView('pdf', compact('guest', 'from', 'to', 'member'));
+        $pdf = Pdf::loadView('pdf', compact('guest', 'from', 'to', 'member', 'expense'));
      
         return $pdf->stream();
     }
