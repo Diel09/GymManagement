@@ -104,31 +104,37 @@ class MemberController extends Controller
     public function time(Request $r) {
         $date = Carbon::now()->toDateString();
         $member = Members::where('rfid', $r->id)->first();
-        $check = TimeIn::where('member_id', $member->id)->where('date', $date)->first();
+        if($member) {
+            $check = TimeIn::where('member_id', $member->id)->where('date', $date)->first();
 
-        if(!$check) {
-            $time = new TimeIn();
-            $time->member_id = $member->id;
+            if(!$check) {
+                $time = new TimeIn();
+                $time->member_id = $member->id;
 
-            $time->date = $date;
-            $time->in = Carbon::now()->toTimeString();
-            $time->save();
+                $time->date = $date;
+                $time->in = Carbon::now()->toTimeString();
+                $time->save();
 
-            return response()->json([
-                'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name . ' Keep Grinding'
-            ]);
-        } else if (!$r->active) {
-            $check->out = Carbon::now()->toTimeString();
-            $check->save();
+                return response()->json([
+                    'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name . ' Keep Grinding'
+                ]);
+            } else if (!$r->active) {
+                $check->out = Carbon::now()->toTimeString();
+                $check->save();
 
-            return response()->json([
-                'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
-            ]);
-        } else {
-            return response()->json([
-                'msg' => 'You are already in '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
-            ]);
+                return response()->json([
+                    'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
+                ]);
+            } else {
+                return response()->json([
+                    'msg' => 'You are already in '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
+                ]);
+            }
         }
+        return response()->json([
+            'msg' => 'RFID not Found'
+        ]);
+        
     }
 
     public function renew(Request $request) {
