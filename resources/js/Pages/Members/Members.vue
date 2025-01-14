@@ -5,9 +5,13 @@
                 <h2 class="text-xl font-semibold leading-tight md:basis-11/12">
                     Members
                 </h2>
-                <div class="md:basis-1/12 flex gap-2">
+                <div class="md:basis-3/12 flex gap-2">
                     <Link :href="route('members.add')" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         <span>Add Members</span>
+                    </Link>
+
+                    <Link :href="route('members.in')" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <span>Member Time-in List</span>
                     </Link>
                 </div>
             </div>

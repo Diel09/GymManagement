@@ -105,31 +105,39 @@ class MemberController extends Controller
         $date = Carbon::now()->toDateString();
         $member = Members::where('rfid', $r->id)->first();
         if($member) {
-            $check = TimeIn::where('member_id', $member->id)->where('date', $date)->first();
+            $membership = MembersMemberships::where('member_id', $member->id)->first();
+            if($membership) {
+                $check = TimeIn::where('member_id', $member->id)->where('date', $date)->first();
 
-            if(!$check) {
-                $time = new TimeIn();
-                $time->member_id = $member->id;
+                if(!$check) {
+                    $time = new TimeIn();
+                    $time->member_id = $member->id;
 
-                $time->date = $date;
-                $time->in = Carbon::now()->toTimeString();
-                $time->save();
+                    $time->date = $date;
+                    $time->in = Carbon::now()->toTimeString();
+                    $time->save();
 
-                return response()->json([
-                    'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name . ' Keep Grinding'
-                ]);
-            } else if (!$r->active) {
-                $check->out = Carbon::now()->toTimeString();
-                $check->save();
+                    return response()->json([
+                        'msg' => 'Welcome, ' . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name . ' Keep Grinding'
+                    ]);
+                } else if (!$r->active) {
+                    $check->out = Carbon::now()->toTimeString();
+                    $check->save();
 
-                return response()->json([
-                    'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
-                ]);
+                    return response()->json([
+                        'msg' => 'Goodbye, ' . $member->first_name . ' ' . $member->middle_name[0] . '.' . $member->last_name . ' Come Again!'
+                    ]);
+                } else {
+                    return response()->json([
+                        'msg' => 'You are already in '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
+                    ]);
+                }
             } else {
                 return response()->json([
-                    'msg' => 'You are already in '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
+                    'msg' => 'Please renew your Membership '  . $member->first_name . ' ' . $member->middle_name[0] . '. ' . $member->last_name
                 ]);
             }
+            
         }
         return response()->json([
             'msg' => 'RFID not Found'
@@ -152,5 +160,19 @@ class MemberController extends Controller
                 'status' => 'success'
             ]);
         }
+    }
+
+    public function memberIn() {
+        return Inertia::render('Members/List');
+    }
+
+    public function fetchMemberIn(Request $r) {
+        $date = Carbon::parse($r->date)->toDateString();
+        // $date = Carbon::parse('January 3, 2025')->toDateString();
+        $list = TimeIn::whereDate('date', $date)
+                ->join('members', 'members.id', 'member_in.member_id')
+                ->get();
+
+        return response()->json($list);
     }
 }

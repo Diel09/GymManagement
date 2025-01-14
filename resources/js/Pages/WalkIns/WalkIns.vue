@@ -5,6 +5,11 @@
                 <h2 class="text-xl font-semibold leading-tight">
                     Walk-ins
                 </h2>
+                <div class="md:basis-1/12 flex gap-2">
+                    <Link :href="route('walkins.list')" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <span>Walk-ins List</span>
+                    </Link>
+                </div>
             </div>
         </template>
 

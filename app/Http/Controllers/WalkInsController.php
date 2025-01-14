@@ -26,7 +26,7 @@ class WalkInsController extends Controller
         $walk_in->last_name = $r->last_name;
         $walk_in->middle_name = $r->middle_name;
         $walk_in->contact = $r->contact;
-        $walk_in->date = Carbon::now()->toDateString();
+        $walk_in->date = Carbon::now()->toDateTimeString();
         $walk_in->amount = $r->amount;
 
         
@@ -41,5 +41,17 @@ class WalkInsController extends Controller
                 'status' => 'error'
             ]);
         }
+    }
+
+    public function list() {
+        return Inertia::render('WalkIns/List');
+    }
+
+    public function fetchList(Request $r) {
+        $date = Carbon::parse($r->date)->toDateString();
+
+        $list = WalkIns::whereDate('date', $date)->get();
+        
+        return response()->json($list);
     }
 }

@@ -41,6 +41,8 @@ Route::get('/add_members', [MemberController::class, 'addMembers'])->middleware(
 Route::post('/save_member', [MemberController::class, 'saveMember'])->middleware('auth')->name('members.save');
 Route::get('/members/{id}/edit', [MemberController::class, 'edit'])->middleware('auth')->name('members.edit');
 Route::post('/update_member', [MemberController::class, 'update'])->middleware('auth')->name('members.update');
+Route::post('/fetch_member_in', [MemberController::class, 'fetchMemberIn'])->middleware('auth')->name('members.fetchIn');
+Route::get('/member_in', [MemberController::class, 'memberIn'])->middleware('auth')->name('members.in');
 Route::post('/renew', [MemberController::class, 'renew'])->middleware('auth')->name('members.renew');
 
 //membership routes
@@ -67,5 +69,7 @@ Route::post('/reports/download', [ReportController::class, 'download'])->middlew
 
 //walk in routes
 Route::get('/walk_in', [WalkInsController::class, 'index'])->middleware('auth')->name('walkins.home');
+Route::get('/list', [WalkInsController::class, 'list'])->middleware('auth')->name('walkins.list');
+Route::post('/fetch-list', [WalkInsController::class, 'fetchList'])->middleware('auth')->name('walkins.fetch');
 Route::post('/save_walkin', [WalkInsController::class, 'saveWalkin'])->middleware('auth')->name('walkins.save');
 require __DIR__ . '/auth.php';
