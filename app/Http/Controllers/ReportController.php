@@ -22,78 +22,122 @@ class ReportController extends Controller
         $walk_in = WalkIns::whereDate('date', '=', Carbon::today()->toDateString())->count();
         $member_in = TimeIn::whereDate('date', '=', Carbon::today()->toDateString())->count();
 
-        //member sales
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+
         $member_sales = MembersMemberships::select(
                 DB::raw('DATE_FORMAT(start_date, "%m") as month'),
                 DB::raw('SUM(fee) as total_amount')
-            )->whereYear('start_date', Carbon::now()->year)
+            )->whereYear('start_date', $currentYear)
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
-        $mem_sales = array_fill(1, 12, 0);;
-
+        $mem_sales = array_fill(1, 12, 0);
         foreach ($member_sales as $sale) {
             $monthIndex = (int) $sale->month; 
             $mem_sales[$monthIndex] = $sale->total_amount;
         }
-        $member_sales = MembersMemberships::select(
-                DB::raw('DATE_FORMAT(start_date, "%m") as month'),
-                DB::raw('SUM(fee) as total_amount')
-            )->whereYear('start_date', Carbon::now()->year)
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
 
-        $mem_sales = array_fill(1, 12, 0);;
-
-        foreach ($member_sales as $sale) {
-            $monthIndex = (int) $sale->month; 
-            $mem_sales[$monthIndex] = $sale->total_amount;
-        }
-        //walk ins sale
         $walk_sales = WalkIns::select(
                 DB::raw('DATE_FORMAT(date, "%m") as month'),
                 DB::raw('SUM(amount) as total_amount')
-            )->whereYear('date', Carbon::now()->year)
+            )->whereYear('date', $currentYear)
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
-        
         $walkIn_sales = array_fill(1, 12, 0);
-
         foreach ($walk_sales as $sale) {
             $monthIndex = (int) $sale->month; 
             $walkIn_sales[$monthIndex] = $sale->total_amount;
         }
-        
-        //sale computation
+
         $month_labels = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December'
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June',
+            7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
         ];
-        $sales = [];
 
+        $monthly_sales = [];
         for ($i = 1; $i <= 12; $i++) {
-            $sales[$month_labels[$i]] = $mem_sales[$i] + $walkIn_sales[$i]; // Use the month name as the key
+            $monthly_sales[$month_labels[$i]] = $mem_sales[$i] + $walkIn_sales[$i];
         }
-
+        //weekly sales
+        $member_weekly_sales = MembersMemberships::select(
+                DB::raw('WEEK(start_date, 1) as week'),
+                DB::raw('SUM(fee) as total_amount')
+            )->whereYear('start_date', $currentYear)
+            ->whereMonth('start_date', $currentMonth)
+            ->groupBy('week')
+            ->orderBy('week')
+            ->get();
+        
+        $walk_weekly_sales = WalkIns::select(
+                DB::raw('WEEK(date, 1) as week'),
+                DB::raw('SUM(amount) as total_amount')
+            )->whereYear('date', $currentYear)
+            ->whereMonth('date', $currentMonth)
+            ->groupBy('week')
+            ->orderBy('week')
+            ->get();
+        
+        // Initialize array for the number of weeks in the current month
+        $weeksInMonth = ceil(Carbon::now()->daysInMonth / 7);
+        $weekly_sales = array_fill(1, $weeksInMonth, 0);
+        
+        foreach ($member_weekly_sales as $sale) {
+            if ($sale->week > 0 && $sale->week <= $weeksInMonth) {
+                $weekly_sales[$sale->week] += $sale->total_amount;
+            }
+        }
+        
+        foreach ($walk_weekly_sales as $sale) {
+            if ($sale->week > 0 && $sale->week <= $weeksInMonth) {
+                $weekly_sales[$sale->week] += $sale->total_amount;
+            }
+        }
+        // Daily report
+        $member_daily_sales = MembersMemberships::select(
+                DB::raw('DAY(start_date) as day'),
+                DB::raw('SUM(fee) as total_amount')
+            )->whereYear('start_date', $currentYear)
+            ->whereMonth('start_date', $currentMonth)
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
+        
+        $walk_daily_sales = WalkIns::select(
+                DB::raw('DAY(date) as day'),
+                DB::raw('SUM(amount) as total_amount')
+            )->whereYear('date', $currentYear)
+            ->whereMonth('date', $currentMonth)
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
+        
+        // Initialize array for days in the current month
+        $daysInMonth = Carbon::now()->daysInMonth;
+        $daily_sales = array_fill(1, $daysInMonth, 0);
+        
+        foreach ($member_daily_sales as $sale) {
+            if ($sale->day > 0 && $sale->day <= $daysInMonth) {
+                $daily_sales[$sale->day] += $sale->total_amount;
+            }
+        }
+        
+        foreach ($walk_daily_sales as $sale) {
+            if ($sale->day > 0 && $sale->day <= $daysInMonth) {
+                $daily_sales[$sale->day] += $sale->total_amount;
+            }
+        }
+        // dd($daily_sales);
         return Inertia::render('Dashboard', [
             'new_mem' => $new_mem,
             'walk_in' => $walk_in,
             'member_in' => $member_in,
-            'sales' => $sales,
+            'monthlySales' => $monthly_sales,
+            'weeklySales' => $weekly_sales,
+            'dailySales' => $daily_sales
         ]);
     }
 

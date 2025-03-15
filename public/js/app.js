@@ -24140,38 +24140,108 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-chart_js__WEBPACK_IMPORTED_MODULE_1__.Chart.register(chart_js__WEBPACK_IMPORTED_MODULE_1__.Title, chart_js__WEBPACK_IMPORTED_MODULE_1__.Tooltip, chart_js__WEBPACK_IMPORTED_MODULE_1__.Legend, chart_js__WEBPACK_IMPORTED_MODULE_1__.BarElement, chart_js__WEBPACK_IMPORTED_MODULE_1__.CategoryScale, chart_js__WEBPACK_IMPORTED_MODULE_1__.LinearScale);
+chart_js__WEBPACK_IMPORTED_MODULE_1__.Chart.register(chart_js__WEBPACK_IMPORTED_MODULE_1__.Title, chart_js__WEBPACK_IMPORTED_MODULE_1__.Tooltip, chart_js__WEBPACK_IMPORTED_MODULE_1__.Legend, chart_js__WEBPACK_IMPORTED_MODULE_1__.LineElement, chart_js__WEBPACK_IMPORTED_MODULE_1__.PointElement, chart_js__WEBPACK_IMPORTED_MODULE_1__.CategoryScale, chart_js__WEBPACK_IMPORTED_MODULE_1__.LinearScale);
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
-      data: {
-        datasets: [{
-          label: 'Monthly Sales',
-          backgroundColor: '#2563eb',
-          data: this.sales
-        }]
-      },
-      options: {
+      selectedReportType: 'monthly',
+      // Default selection
+      chartData: this.getChartData('monthly'),
+      chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
           y: {
             ticks: {
-              stepSize: 100 // Set the interval between ticks to 100
+              stepSize: 100
             }
           }
         }
       }
     };
   },
-  props: ['new_mem', 'walk_in', 'member_in', 'sales'],
+  props: {
+    new_mem: Number,
+    walk_in: Number,
+    member_in: Number,
+    dailySales: {
+      type: Object,
+      "default": function _default() {
+        return {
+          labels: [],
+          data: []
+        };
+      }
+    },
+    weeklySales: {
+      type: Object,
+      "default": function _default() {
+        return {
+          labels: [],
+          data: []
+        };
+      }
+    },
+    monthlySales: {
+      type: Object,
+      "default": function _default() {
+        return {
+          labels: [],
+          data: []
+        };
+      }
+    }
+  },
   components: {
     AuthenticatedLayout: _Layouts_Authenticated_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
-    Bar: vue_chartjs__WEBPACK_IMPORTED_MODULE_2__.Bar
+    Line: vue_chartjs__WEBPACK_IMPORTED_MODULE_2__.Line
   },
-  methods: {},
+  methods: {
+    // Function to return chart data based on selection
+    getChartData: function getChartData(type) {
+      var labels = [];
+      var dataset = [];
+      if (type === 'daily' && this.dailySales) {
+        // Convert day numbers into an array of labels
+        labels = Object.keys(this.dailySales).map(function (day) {
+          return "Day ".concat(day);
+        });
+        // Convert sales values into an array of data
+        dataset = Object.values(this.dailySales);
+      } else if (type === 'weekly' && this.weeklySales) {
+        // Convert week numbers into an array of labels
+        labels = Object.keys(this.weeklySales).map(function (week) {
+          return "Week ".concat(week);
+        });
+        // Convert sales values into an array of data
+        dataset = Object.values(this.weeklySales);
+      } else if (type === 'monthly' && this.monthlySales) {
+        // Convert object keys (month names) into an array of labels
+        labels = Object.keys(this.monthlySales);
+        // Convert object values (sales data) into an array of values
+        dataset = Object.values(this.monthlySales);
+      }
+      return {
+        labels: labels,
+        datasets: [{
+          label: "".concat(type.charAt(0).toUpperCase() + type.slice(1), " Sales"),
+          backgroundColor: 'rgba(37, 99, 235, 0.5)',
+          borderColor: '#2563eb',
+          fill: true,
+          data: dataset
+        }]
+      };
+    },
+    // Update chart data when selection changes
+    updateChart: function updateChart() {
+      this.chartData = this.getChartData(this.selectedReportType);
+    }
+  },
   mounted: function mounted() {
-    console.log('Sales prop:', this.sales);
+    console.log('Daily Sales:', this.dailySales);
+    console.log('Weekly Sales:', this.weeklySales);
+    console.log('Monthly Sales:', this.monthlySales);
+    console.log('Chart Data:', this.getChartData(this.selectedReportType));
   }
 });
 
@@ -27254,13 +27324,29 @@ var _hoisted_12 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElement
   "class": "font-normal text-gray-700 dark:text-gray-400"
 }, "Members Time-in", -1 /* HOISTED */);
 var _hoisted_13 = {
+  "class": "mt-4"
+};
+var _hoisted_14 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+  "class": "block text-sm font-medium text-gray-700 dark:text-gray-200"
+}, "Select Report Type:", -1 /* HOISTED */);
+var _hoisted_15 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "daily"
+}, "Daily Report", -1 /* HOISTED */);
+var _hoisted_16 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "weekly"
+}, "Weekly Report", -1 /* HOISTED */);
+var _hoisted_17 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "monthly"
+}, "Monthly Report", -1 /* HOISTED */);
+var _hoisted_18 = [_hoisted_15, _hoisted_16, _hoisted_17];
+var _hoisted_19 = {
   "class": "mt-4",
   style: {
-    height: '63vh'
+    height: '60vh'
   }
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  var _component_Bar = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Bar");
+  var _component_Line = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Line");
   var _component_AuthenticatedLayout = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("AuthenticatedLayout");
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createBlock)(_component_AuthenticatedLayout, {
     title: "Dashboard"
@@ -27269,9 +27355,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return [_hoisted_1];
     }),
     "default": (0,vue__WEBPACK_IMPORTED_MODULE_0__.withCtx)(function () {
-      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.new_mem), 1 /* TEXT */), _hoisted_6]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.walk_in), 1 /* TEXT */), _hoisted_9]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.member_in), 1 /* TEXT */), _hoisted_12])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Bar, {
-        data: $data.data,
-        options: $data.options
+      return [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_4, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.new_mem), 1 /* TEXT */), _hoisted_6]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_7, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.walk_in), 1 /* TEXT */), _hoisted_9]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("a", _hoisted_10, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("h5", _hoisted_11, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($props.member_in), 1 /* TEXT */), _hoisted_12])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Dropdown to Select Report Type "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_13, [_hoisted_14, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
+        "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
+          return $data.selectedReportType = $event;
+        }),
+        onChange: _cache[1] || (_cache[1] = function () {
+          return $options.updateChart && $options.updateChart.apply($options, arguments);
+        }),
+        "class": "mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:bg-gray-800 dark:text-white"
+      }, [].concat(_hoisted_18), 544 /* NEED_HYDRATION, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.selectedReportType]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)(" Chart Display "), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_19, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Line, {
+        data: $data.chartData,
+        options: $data.chartOptions
       }, null, 8 /* PROPS */, ["data", "options"])])])];
     }),
     _: 1 /* STABLE */
