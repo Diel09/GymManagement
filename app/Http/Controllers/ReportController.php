@@ -63,17 +63,21 @@ class ReportController extends Controller
             $monthly_sales[$month_labels[$i]] = $mem_sales[$i] + $walkIn_sales[$i];
         }
         //weekly sales
+        $start = Carbon::now()->startOfMonth()->startOfWeek(Carbon::MONDAY); // Ensure it starts on Monday
+
         $member_weekly_sales = MembersMemberships::select(
-                DB::raw('WEEK(start_date, 1) as week'),
+                DB::raw('WEEK(start_date, 1) - WEEK("' . $start->format('Y-m-d') . '", 1) + 1 as week'),
                 DB::raw('SUM(fee) as total_amount')
-            )->whereYear('start_date', $currentYear)
+            )
+            ->whereYear('start_date', $currentYear)
             ->whereMonth('start_date', $currentMonth)
             ->groupBy('week')
             ->orderBy('week')
             ->get();
         
+
         $walk_weekly_sales = WalkIns::select(
-                DB::raw('WEEK(date, 1) as week'),
+                DB::raw('WEEK(date, 1) - WEEK("' . $start->format('Y-m-d') . '", 1) + 1 as week'),
                 DB::raw('SUM(amount) as total_amount')
             )->whereYear('date', $currentYear)
             ->whereMonth('date', $currentMonth)
