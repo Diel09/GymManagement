@@ -66,6 +66,7 @@
 <script>
 import AuthenticatedLayout from '@/Layouts/Authenticated.vue'
 import { Link } from '@inertiajs/inertia-vue3';
+import axios from 'axios';
 
 export default {
     data() {
@@ -86,48 +87,66 @@ export default {
         AuthenticatedLayout, Link
     },
     methods: {
+        async fetchLatestDetails() {
+            if (this.walk_in.first_name && this.walk_in.middle_name && this.walk_in.last_name) {
+                try {
+                    const response = await axios.get('/get_latest_walkin', {
+                        params: {
+                            first_name: this.walk_in.first_name,
+                            middle_name: this.walk_in.middle_name,
+                            last_name: this.walk_in.last_name
+                        }
+                    });
+
+                    if (response.data) {
+                        this.walk_in.contact = response.data.contact;
+                    }
+                } catch (error) {
+                    console.error("Error fetching latest walk-in details:", error);
+                }
+            }
+        },
         saveWalkIn() {
-            this.errors = {}
+            this.errors = {};
             if (!this.walk_in.first_name) {
                 this.errors.first_name = "First name is required.";
             }
-
             if (!this.walk_in.last_name) {
                 this.errors.last_name = "Last name is required.";
             }
-
             if (!this.walk_in.middle_name) {
                 this.errors.middle_name = "Middle name is required.";
             }
-
             if (!this.walk_in.amount) {
                 this.errors.amount = "Amount is required.";
             }
-
             if (!this.walk_in.contact) {
                 this.errors.contact = "Contact is required.";
             }
 
-            if(Object.keys(this.errors).length == 0) {
+            if (Object.keys(this.errors).length === 0) {
                 axios.post('/save_walkin', this.walk_in).then((response) => {
-                    if(response.data.status == 'success') {
+                    if (response.data.status === 'success') {
                         Object.keys(this.walk_in).forEach(key => this.walk_in[key] = '');
                         this.msg = response.data.msg;
 
                         setTimeout(() => {
-                            this.msg = '';  // Clear the message after 3 seconds
+                            this.msg = '';
                         }, 3000);
                     } else {
                         this.error = response.data.msg;
-
                         setTimeout(() => {
-                            this.error = '';  // Clear the message after 3 seconds
+                            this.error = '';
                         }, 3000);
                     }
                 });
             }
         }
     },
-    props: ['memberships'],
+    watch: {
+        'walk_in.first_name': 'fetchLatestDetails',
+        'walk_in.middle_name': 'fetchLatestDetails',
+        'walk_in.last_name': 'fetchLatestDetails',
+    }
 }
 </script>

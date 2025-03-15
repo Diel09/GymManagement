@@ -72,4 +72,6 @@ Route::get('/walk_in', [WalkInsController::class, 'index'])->middleware('auth')-
 Route::get('/list', [WalkInsController::class, 'list'])->middleware('auth')->name('walkins.list');
 Route::post('/fetch-list', [WalkInsController::class, 'fetchList'])->middleware('auth')->name('walkins.fetch');
 Route::post('/save_walkin', [WalkInsController::class, 'saveWalkin'])->middleware('auth')->name('walkins.save');
+Route::get('/get_latest_walkin', [WalkInsController::class, 'getLatestWalkIn'])->name('walkins.autoFetch');
+
 require __DIR__ . '/auth.php';

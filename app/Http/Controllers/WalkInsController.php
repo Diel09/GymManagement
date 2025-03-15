@@ -54,4 +54,23 @@ class WalkInsController extends Controller
         
         return response()->json($list);
     }
+
+    public function getLatestWalkIn(Request $request)
+    {
+        $walkIn = WalkIns::where('first_name', $request->first_name)
+            ->where('middle_name', $request->middle_name)
+            ->where('last_name', $request->last_name)
+            ->latest()
+            ->first();
+
+        if ($walkIn) {
+            return response()->json([
+                'amount' => $walkIn->amount,
+                'contact' => $walkIn->contact
+            ]);
+        }
+
+        return response()->json(null);
+    }
+
 }
