@@ -13,23 +13,37 @@
                 <span class="font-medium">{{ this.msg }}</span>
             </div>
             <form @submit.prevent="saveMembership" class="space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
-                        <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-white">Membership Name</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Membership Name</label>
                         <input type="text" v-model="membership.name" placeholder="Membership name" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</span>
                     </div>
                     
                     <div>
-                        <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-white">Fee</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Fee</label>
                         <input type="number" v-model="membership.fee" placeholder="Fee (PHP)" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.fee" class="text-red-500 text-sm">{{ errors.fee }}</span>
                     </div>
 
-                    <div>
-                        <label for="middle_name" class="block text-sm font-medium text-gray-700 dark:text-white">Duration</label>
+                    <div v-if="membership.type == 0">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Duration</label>
                         <input type="number" v-model="membership.duration" placeholder="Duration in months" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.duration" class="text-red-500 text-sm">{{ errors.duration }}</span>
+                    </div>
+
+                    <div v-if="membership.type == 1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Number of Sessions</label>
+                        <input type="number" v-model="membership.duration" placeholder="Number of session" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <span v-if="errors.duration" class="text-red-500 text-sm">{{ errors.duration }}</span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Membership Type</label>
+                        <select v-model="membership.type" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                            <option value="0">Duration in Months</option>
+                            <option value="1">Per Session</option>
+                        </select>
+                        <span v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</span>
                     </div>
                 </div>
                 
@@ -58,7 +72,8 @@ export default {
             membership: {
                 name: '',
                 fee: '',
-                duration: ''
+                duration: '',
+                type: 0
             },
             errors: {}
         }
@@ -83,9 +98,9 @@ export default {
                 this.errors.duration = "Duration is required.";
             } else if (this.membership.duration <= 0) {
                 this.errors.duration = "Duration must be a positive number.";
-            } else if (this.membership.duration > 12) {
+            } else if (this.membership.duration > 12 && this.membership.type == 0) {
                 this.errors.duration = "Duration must be a less than 12";
-            }
+            } 
 
             if(Object.keys(this.errors).length == 0) {
                 axios.post('/save_membership', this.membership).then((response) => {

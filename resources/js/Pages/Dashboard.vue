@@ -10,22 +10,22 @@
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
             <div class="grid md:grid-rows-1 md:grid-flow-col gap-4">
-                <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                <Link :href="route('members.home')" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ new_mem }}</h5>
                     <p class="font-normal text-gray-700 dark:text-gray-400">New Members</p>
-                </a>
-                <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                </Link>
+                <Link :href="route('walkins.list')" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ walk_in }}</h5>
                     <p class="font-normal text-gray-700 dark:text-gray-400">Walk-Ins Today</p>
-                </a>
-                <a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                </Link>
+                <Link :href="route('members.in')" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ member_in }}</h5>
                     <p class="font-normal text-gray-700 dark:text-gray-400">Members Time-in</p>
-                </a>
+                </Link>
             </div>
 
             <!-- Dropdown to Select Report Type -->
-            <div class="mt-4">
+            <div class="mt-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Select Report Type:</label>
                 <select v-model="selectedReportType" @change="updateChart" class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none dark:bg-gray-800 dark:text-white">
                     <option value="daily">Daily Report</option>
@@ -46,7 +46,7 @@
 import AuthenticatedLayout from '@/Layouts/Authenticated.vue'
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js'
 import { Line } from 'vue-chartjs'
-
+import { Link } from '@inertiajs/inertia-vue3';
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale)
 
 export default {
@@ -85,7 +85,7 @@ export default {
         }
     },
     components: {
-        AuthenticatedLayout, Line
+        AuthenticatedLayout, Line, Link
     },
     methods: {
         // Function to return chart data based on selection

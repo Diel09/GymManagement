@@ -24,7 +24,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">First Name</label>
-                        <input v-model="walk_in.first_name" type="text" placeholder="Firs Name" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <input v-model="walk_in.first_name" type="text" placeholder="First Name" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.first_name" class="text-red-500 text-sm">{{ errors.first_name }}</span>
                     </div>
                     

@@ -29,7 +29,7 @@
                                 Membership
                             </th>
                             <th scope="col" class="px-6 py-3">
-                                Membership Due Date
+                                Due Date / Remaining Session
                             </th>
                             <th scope="col" class="px-6 py-3">
                                 Status
@@ -47,11 +47,14 @@
                             <td class="px-6 py-4">
                                 {{ member.name }}
                             </td>
-                            <td class="px-6 py-4">
+                            <td v-if="member.type == 0" class="px-6 py-4">
                                 {{ formatDate(member.end_date) }}
                             </td>
+                            <td v-else class="px-6 py-4">
+                                {{ member.duration - member.session_count }}
+                            </td>
                             <td class="px-6 py-4">
-                                <span v-if="new Date(member.end_date) >= new Date()" class="text-green-500 font-semibold">
+                                <span v-if="new Date(member.end_date) >= new Date() && member.type == 0 || (member.type == 1 && member.duration - member.session_count > 0)" class="text-green-500 font-semibold">
                                     Active
                                 </span>
                                 <span v-else class="text-red-500 font-semibold">
@@ -68,7 +71,7 @@
                                 >
                                     <span>Delete</span>
                                 </button> -->
-                                <button @click="renew(member.id)" v-if="new Date(member.end_date) <= new Date()" type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                                <button @click="renew(member.id)" v-if="new Date(member.end_date) <= new Date() && member.type == 0 || (member.type == 1 && member.duration - member.session_count <= 0)" type="button" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                                     Renew
                                 </button>
 

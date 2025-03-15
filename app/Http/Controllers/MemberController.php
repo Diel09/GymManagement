@@ -19,17 +19,37 @@ class MemberController extends Controller
         //                         ->whereRaw('latest_membership.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
         //             })->join('memberships', 'latest_membership.memberships_id', '=', 'memberships.id')->paginate(10);
 
-        $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'users_memberships.end_date', 'members.id')
-                        ->leftJoin('users_memberships', function($join) {
-                            $join->on('users_memberships.member_id', '=', 'members.id')
-                                ->whereRaw('users_memberships.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
-                        })
-                        ->leftJoin('memberships', 'users_memberships.memberships_id', '=', 'memberships.id')
-                        ->paginate(10);
+        $members = Members::select(
+            'members.first_name', 
+            'members.middle_name', 
+            'members.last_name', 
+            'memberships.name', 
+            'users_memberships.end_date', 
+            'users_memberships.start_date', // Ensure start_date is selected
+            'members.id', 
+            'memberships.type',
+            'memberships.duration',
+            \DB::raw('(CASE WHEN memberships.type = 1 THEN 
+                (SELECT COUNT(*) FROM member_in 
+                 WHERE member_in.member_id = members.id 
+                 AND member_in.date >= users_memberships.start_date) 
+            ELSE NULL END) as session_count')
+        )
+        ->leftJoin('users_memberships', function($join) {
+            $join->on('users_memberships.member_id', '=', 'members.id')
+                ->whereRaw('users_memberships.id = (
+                    SELECT um.id FROM users_memberships as um 
+                    WHERE um.member_id = members.id 
+                    ORDER BY um.end_date DESC 
+                    LIMIT 1
+                )');
+        })
+        ->leftJoin('memberships', 'users_memberships.memberships_id', '=', 'memberships.id')
+        ->paginate(10);
+    
 
-        // dd($members);
         $memberships = Membership::all();
-
+        // dd($members);
         return Inertia::render('Members/Members', [
             'members' => $members,
             'memberships' => $memberships,
@@ -65,9 +85,14 @@ class MemberController extends Controller
         $user_membership->member_id = $member->id;
         $user_membership->memberships_id = $r->membership;
         $user_membership->fee = $membership->fee;
-        $user_membership->start_date = Carbon::now()->toDateString();
-        $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
-
+        if($membership->type == 1) {
+            $user_membership->start_date = Carbon::now()->toDateString();
+            $user_membership->end_date = Carbon::now()->toDateString();
+        } else {
+            $user_membership->start_date = Carbon::now()->toDateString();
+            $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
+        }
+        
         if($user_membership->save()) {
             return response()->json([
                 'status' => 'success'
@@ -152,8 +177,13 @@ class MemberController extends Controller
         $user_membership->member_id = $request->id;
         $user_membership->memberships_id = $request->membership;
         $user_membership->fee = $membership->fee;
-        $user_membership->start_date = Carbon::now()->toDateString();
-        $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
+        if($membership->type == 1) {
+            $user_membership->start_date = Carbon::now()->toDateString();
+            $user_membership->end_date = Carbon::now()->toDateString();
+        } else {
+            $user_membership->start_date = Carbon::now()->toDateString();
+            $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
+        }
 
         if($user_membership->save()) {
             return response()->json([

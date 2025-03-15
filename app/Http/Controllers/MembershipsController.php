@@ -24,10 +24,11 @@ class MembershipsController extends Controller
 
     public function saveMembership(Request $r) {
         $membership = new Membership;
-
+        
         $membership->name = $r->name;
         $membership->fee = $r->fee;
         $membership->duration = $r->duration;
+        $membership->type = $r->type;
 
         if($membership->save()) {
             return response()->json([
