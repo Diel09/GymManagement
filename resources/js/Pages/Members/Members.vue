@@ -19,6 +19,19 @@
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
             <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                <div class="flex flex-col md:flex-row gap-2 mb-4">
+                    <input v-model="searchQuery" @input="applyFilters"
+                        class="border rounded-md px-3 py-2 w-full md:w-1/2"
+                        placeholder="Search name or membership...">
+
+                    <select v-model="statusFilter" @change="applyFilters"
+                            class="border rounded-md px-3 py-2 w-full md:w-1/4">
+                        <option value="all">All</option>
+                        <option value="active">Active</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+
                 <table v-if="members.data && members.data.length > 0" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                         <tr>
@@ -135,7 +148,9 @@ export default {
             text: '',
             showModal: false,
             membership: '',
-            memberId: ''
+            memberId: '',
+            searchQuery: this.filters.search || '',
+            statusFilter: this.filters.status || 'all',
         }
     },
     components: {
@@ -180,8 +195,23 @@ export default {
                 month: 'long', // "October"
                 day: 'numeric', // "12"
             });
+        },
+        applyFilters() {
+            this.$inertia.get(route('members.home'), {
+                search: this.searchQuery,
+                status: this.statusFilter !== 'all' ? this.statusFilter : null,
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+            });
         }
     },
-    props: ['members', 'totalItems', 'currentRange', 'memberships'],
+    props: {
+        members: Object,
+        memberships: Array,
+        totalItems: Number,
+        currentRange: String,
+        filters: Object, // { search: '', status: '' }
+    },
 }
 </script>

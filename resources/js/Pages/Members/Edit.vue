@@ -10,7 +10,7 @@
 
         <div class="p-6 overflow-hidden bg-white rounded-md shadow-md dark:bg-dark-eval-1">
             <form @submit.prevent="updateMember" class="space-y-6">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">First Name</label>
                         <input v-model="member.first_name" type="text" placeholder="Firs Name" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
@@ -27,9 +27,6 @@
                         <input v-model="member.middle_name" type="text" placeholder="Middle Name" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
                         <span v-if="errors.middle_name" class="text-red-500 text-sm">{{ errors.middle_name }}</span>
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">Gender</label>
                         <select v-model="member.gender" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
@@ -38,6 +35,14 @@
                             <option value="3">Others</option>
                         </select>
                         <span v-if="errors.gender" class="text-red-500 text-sm">{{ errors.gender }}</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div v-if="membership.type == 1">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-white">Remaining Session</label>
+                        <input v-model="member.remaining_session" type="text" placeholder="Remaining Session" class="dark:text-black mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm">
+                        <span v-if="errors.member" class="text-red-500 text-sm">{{ errors.member }}</span>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-white">Birthdate</label>
@@ -85,7 +90,8 @@ export default {
                 gender: this.mem.gender,
                 birthdate: this.mem.birth_date,
                 contact: this.mem.contact,
-                rfid: this.mem.rfid
+                rfid: this.mem.rfid,
+                remaining_session: this.remaining_session
             },
             errors: {}
         }
@@ -93,7 +99,7 @@ export default {
     components: {
         AuthenticatedLayout, Link
     },
-    props: ['mem'],
+    props: ['mem', 'remaining_session', 'membership'],
     methods: {
         updateMember() {
             this.errors = {}

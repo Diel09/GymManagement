@@ -12,51 +12,104 @@ use Carbon\Carbon;
 
 class MemberController extends Controller
 {
-    public function index() {
-        // $members = Members::select('members.first_name', 'members.middle_name', 'members.last_name', 'memberships.name', 'latest_membership.end_date', 'members.id')
-        //                 ->leftJoin('users_memberships as latest_membership', function($join) {
-        //                     $join->on('latest_membership.member_id', '=', 'members.id')
-        //                         ->whereRaw('latest_membership.end_date = (SELECT MAX(um.end_date) FROM users_memberships as um WHERE um.member_id = members.id)');
-        //             })->join('memberships', 'latest_membership.memberships_id', '=', 'memberships.id')->paginate(10);
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
+        $status = $request->input('status'); // 'active', 'expired', or null
 
+        // Subquery to get latest membership for each member
+        $latestMemberships = \DB::table('users_memberships as um1')
+            ->select('um1.*')
+            ->whereRaw('um1.id = (
+                SELECT um2.id FROM users_memberships as um2
+                WHERE um2.member_id = um1.member_id
+                ORDER BY um2.start_date DESC, um2.id DESC
+                LIMIT 1
+            )');
+
+        // Base member query
         $members = Members::select(
-            'members.first_name', 
-            'members.middle_name', 
-            'members.last_name', 
-            'memberships.name', 
-            'users_memberships.end_date', 
-            'users_memberships.start_date', // Ensure start_date is selected
-            'members.id', 
-            'memberships.type',
-            'memberships.duration',
-            \DB::raw('(CASE WHEN memberships.type = 1 THEN 
-                (SELECT COUNT(*) FROM member_in 
-                 WHERE member_in.member_id = members.id 
-                 AND member_in.date >= users_memberships.start_date) 
-            ELSE NULL END) as session_count')
-        )
-        ->leftJoin('users_memberships', function($join) {
-            $join->on('users_memberships.member_id', '=', 'members.id')
-                ->whereRaw('users_memberships.id = (
-                    SELECT um.id FROM users_memberships as um 
-                    WHERE um.member_id = members.id 
-                    ORDER BY um.end_date DESC 
-                    LIMIT 1
-                )');
-        })
-        ->leftJoin('memberships', 'users_memberships.memberships_id', '=', 'memberships.id')
-        ->paginate(10);
-    
+                'members.first_name', 
+                'members.middle_name', 
+                'members.last_name', 
+                'memberships.name', 
+                'latest_um.end_date', 
+                'latest_um.start_date', 
+                'members.id', 
+                'memberships.type',
+                'latest_um.duration',
+                \DB::raw('(CASE WHEN memberships.type = 1 THEN 
+                    (SELECT COUNT(*) FROM member_in 
+                    WHERE member_in.member_id = members.id 
+                    AND member_in.date >= latest_um.start_date) 
+                ELSE NULL END) as session_count')
+            )
+            ->leftJoinSub($latestMemberships, 'latest_um', function($join) {
+                $join->on('latest_um.member_id', '=', 'members.id');
+            })
+            ->leftJoin('memberships', 'latest_um.memberships_id', '=', 'memberships.id');
+
+        // Search by name or membership name
+        if ($search) {
+            $members->where(function ($query) use ($search) {
+                $query->where('members.first_name', 'like', "%{$search}%")
+                    ->orWhere('members.middle_name', 'like', "%{$search}%")
+                    ->orWhere('members.last_name', 'like', "%{$search}%")
+                    ->orWhere('memberships.name', 'like', "%{$search}%");
+            });
+        }
+
+        // Status filter
+        if ($status === 'active') {
+            $members->where(function($q) {
+                $q->where(function($q) {
+                    $q->where('memberships.type', 0)
+                    ->where('latest_um.end_date', '>=', now());
+                })->orWhere(function($q) {
+                    $q->where('memberships.type', 1)
+                    ->whereRaw('(latest_um.duration - (
+                        SELECT COUNT(*) FROM member_in 
+                        WHERE member_in.member_id = members.id 
+                        AND member_in.date >= latest_um.start_date
+                    )) > 0');
+                });
+            });
+        } elseif ($status === 'expired') {
+            $members->where(function($q) {
+                $q->where(function($q) {
+                    $q->where('memberships.type', 0)
+                    ->where('latest_um.end_date', '<', now());
+                })->orWhere(function($q) {
+                    $q->where('memberships.type', 1)
+                    ->whereRaw('(latest_um.duration - (
+                        SELECT COUNT(*) FROM member_in 
+                        WHERE member_in.member_id = members.id 
+                        AND member_in.date >= latest_um.start_date
+                    )) <= 0');
+                });
+            });
+        }
+
+        // Paginate with query string preserved
+        $membersPaginated = $members->paginate(10)->withQueryString();
 
         $memberships = Membership::all();
-        // dd($members);
+
         return Inertia::render('Members/Members', [
-            'members' => $members,
+            'members' => $membersPaginated,
             'memberships' => $memberships,
-            'totalItems' => $members->total(),
-            'currentRange' => sprintf('%d-%d', ($members->currentPage() - 1) * $members->perPage() + 1, min($members->currentPage() * $members->perPage(), $members->total())),
+            'totalItems' => $membersPaginated->total(),
+            'currentRange' => sprintf('%d-%d',
+                $membersPaginated->firstItem(),
+                $membersPaginated->lastItem()
+            ),
+            'filters' => [
+                'search' => $search,
+                'status' => $status,
+            ],
         ]);
     }
+
 
     public function addMembers() {
         $memberships = Membership::all();
@@ -88,6 +141,7 @@ class MemberController extends Controller
         if($membership->type == 1) {
             $user_membership->start_date = Carbon::now()->toDateString();
             $user_membership->end_date = Carbon::now()->toDateString();
+            $user_membership->duration = $membership->duration;
         } else {
             $user_membership->start_date = Carbon::now()->toDateString();
             $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
@@ -102,8 +156,22 @@ class MemberController extends Controller
 
     public function edit($id) {
         $mem = Members::findOrFail($id);
+        $membership = MembersMemberships::where('member_id', $id)
+            ->latest()
+            ->first();
+
+        $user_membership = Membership::findOrFail($membership->memberships_id);
+        // dd($user_membership);
+        $time_in = TimeIn::where('member_id', $id)
+            ->whereDate('date', '>=', $membership->start_date)
+            ->count();
+        
+        $remaining_session =  $membership->duration - $time_in;
+        
         return Inertia::render('Members/Edit', [
             'mem' => $mem,
+            'remaining_session' => $remaining_session,
+            'membership' => $user_membership,
         ]);
     }
 
@@ -119,6 +187,18 @@ class MemberController extends Controller
         $member->contact = $r->contact;
         $member->rfid = $r->rfid;
 
+        $membership = MembersMemberships::where('member_id', $r->id)
+            ->latest('start_date')
+            ->first();
+
+        $membership_type = Membership::findOrFail($membership->memberships_id);
+        
+        $time_in = TimeIn::where('member_id', $r->id)
+            ->whereDate('date', '>=', $membership->start_date)
+            ->count();
+
+        $membership->duration = $r->remaining_session + $time_in;
+        $membership->save();
         if($member->save()) {
             return response()->json([
                 'status' => 'success'
@@ -180,6 +260,7 @@ class MemberController extends Controller
         if($membership->type == 1) {
             $user_membership->start_date = Carbon::now()->toDateString();
             $user_membership->end_date = Carbon::now()->toDateString();
+            $user_membership->duration = $membership->duration;
         } else {
             $user_membership->start_date = Carbon::now()->toDateString();
             $user_membership->end_date = Carbon::now()->addMonths($membership->duration)->toDateString();
